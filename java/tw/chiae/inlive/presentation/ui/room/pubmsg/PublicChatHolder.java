@@ -1,0 +1,374 @@
+package tw.chiae.inlive.presentation.ui.room.pubmsg;
+
+import android.annotation.SuppressLint;
+import android.content.Context;
+import android.text.SpannableString;
+import android.text.TextUtils;
+import android.util.Log;
+import android.view.View;
+import android.widget.TextView;
+
+import org.w3c.dom.Text;
+
+import java.util.HashMap;
+
+import tw.chiae.inlive.R;
+import tw.chiae.inlive.data.bean.websocket.LightHeartMsg;
+import tw.chiae.inlive.data.bean.websocket.RoomPublicMsg;
+import tw.chiae.inlive.data.bean.websocket.SendGiftMsg;
+import tw.chiae.inlive.data.bean.websocket.SystemMsg;
+import tw.chiae.inlive.data.bean.websocket.SystemWelcome;
+import tw.chiae.inlive.data.bean.websocket.UserPublicMsg;
+import tw.chiae.inlive.presentation.ui.base.recycler.SimpleRecyclerHolder;
+
+/**
+ * @author Muyangmin
+ * @since 1.0.0
+ * Recycle的viewholder
+ */
+public class PublicChatHolder extends SimpleRecyclerHolder<RoomPublicMsg>  implements PublicChatHolderCallback {
+
+    //    private final ImageView ivLevel;
+    private final Context mHolderContext;
+    //    private final TextView tvPublicName;
+//    private final ImageView ivPublicLevel;
+    private final TextView tvPublicContent;
+   /* private final View vSpace2;
+    private final ImageView iv_idICon;
+
+    private LinearLayout llmainLayout;
+    private final View vSpace;
+    private TextView tvContent,tvMsgMode,tvMsgName;*/
+
+
+    private MsgItem item;
+    private HashMap<String, Object> mData;
+    private String Userid;
+    private int UserVip;
+    private int msgType = 0 ;
+    private CharSequence ContentMsg;
+    private CharSequence nameView;
+
+    public int getMsgType() {
+        return msgType;
+    }
+
+    public int getUserVip() {
+        return UserVip;
+    }
+
+    public int getUserLevel() {
+        return UserLevel;
+    }
+
+    private int UserLevel;
+
+    public String getUserid() {
+        return Userid;
+    }
+
+    public String getUserName() {
+        return UserName;
+    }
+
+    private String UserName;
+
+    public MsgItem getItem() {
+        return item;
+    }
+
+    public void setItem(MsgItem item) {
+        this.item = item;
+    }
+    public String getTextViewContent (){
+        SpannableString sp = new SpannableString(tvPublicContent.getText());
+        return sp +"";
+    }
+    public PublicChatHolder(View itemView, Context context) {
+        super(itemView);
+        this.mHolderContext = context.getApplicationContext();
+      /*  iv_idICon = (ImageView)itemView.findViewById(R.id.id_icon);
+        llmainLayout = (LinearLayout) itemView.findViewById(R.id.item_public_chat_main_layout);
+        tvPublicName = (TextView) itemView.findViewById(R.id.tv_pub_msg);
+        ivPublicLevel = (ImageView) itemView.findViewById(R.id.iv_pub_msg);
+        tvContent = (TextView) itemView.findViewById(R.id.item_public_chat_tv);
+        tvMsgMode = (TextView) itemView.findViewById(R.id.item_public_chat_flag_tv);
+        ivLevel = (ImageView)itemView.findViewById(R.id.item_public_chat_level_iv);*/
+        tvPublicContent = (TextView)itemView.findViewById(R.id.tv_pub_content);
+
+/*        vSpace = itemView.findViewById(R.id.view);
+        vSpace2 = itemView.findViewById(R.id.view2);*/
+
+
+    }
+
+    @Override
+    public void displayData(final RoomPublicMsg data) {
+
+        //final RelativeLayout.LayoutParams vParams = (RelativeLayout.LayoutParams) vSpace.getLayoutParams();
+        if (data instanceof UserPublicMsg) {
+          /*  iv_idICon.setVisibility(View.VISIBLE);
+            tvPublicContent.setVisibility(View.VISIBLE);
+            llmainLayout.setVisibility(View.VISIBLE);
+            vSpace2.setVisibility(View.VISIBLE);
+
+            tvMsgMode.setVisibility(View.GONE);
+            ivLevel.setVisibility(View.GONE);
+            vSpace.setVisibility(View.GONE);
+            tvContent.setVisibility(View.GONE);*/
+            //vParams.addRule(RelativeLayout.BELOW, R.id.item_public_chat_main_layout);
+            //RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) tvContent.getLayoutParams();
+            //params.addRule(RelativeLayout.RIGHT_OF, R.id.item_public_chat_main_layout);
+
+            //tvContent.setLayoutParams(params);
+            Userid = ((UserPublicMsg) data).getUserId();
+            UserName = ((UserPublicMsg) data).getFromClientName();
+            UserVip = ((UserPublicMsg) data).getVipLevel();
+            UserLevel = ((UserPublicMsg) data).getLevel();
+            nameView = getNameView((UserPublicMsg) data);
+            ContentMsg = buildUserChatSequence(nameView,(UserPublicMsg) data);
+            tvPublicContent.setText(ContentMsg);
+            msgType = 1;
+        } else if (data instanceof LightHeartMsg ||data instanceof SendGiftMsg ||data instanceof SystemWelcome) {
+
+           /* iv_idICon.setVisibility(View.VISIBLE);
+            tvMsgMode.setVisibility(View.VISIBLE);
+            ivLevel.setVisibility(View.VISIBLE);
+            vSpace.setVisibility(View.VISIBLE);
+            tvContent.setVisibility(View.VISIBLE);
+            vSpace2.setVisibility(View.GONE);
+            tvPublicContent.setVisibility(View.GONE);
+            llmainLayout.setVisibility(View.GONE);*/
+            tvPublicContent.setText(buildSysMsgSequence( data));
+            msgType = 0;
+
+        } else if (data instanceof SystemMsg) {
+           /* iv_idICon.setVisibility(View.VISIBLE);
+            //vParams.addRule(RelativeLayout.BELOW, R.id.item_public_chat_tv);5j/
+            tvContent.setVisibility(View.VISIBLE);
+            tvMsgMode.setVisibility(View.GONE);
+            ivLevel.setVisibility(View.GONE);
+            tvPublicContent.setVisibility(View.GONE);
+            llmainLayout.setVisibility(View.GONE);
+            vSpace2.setVisibility(View.GONE);
+            vSpace.setVisibility(View.VISIBLE);*/
+            msgType = 0;
+           String sContent = ((SystemMsg) data).getContent();
+            if(sContent.toString().contains("將主播加入了最愛") ||sContent.toString().contains("将主播加入了最爱")|| sContent.toString().contains("已被管理員禁言") ){
+                MsgUtils utils = MsgUtils.getInstance();
+                CharSequence sysTag = utils.buildTag("系統", 0, tvPublicContent.getLineHeight());
+                tvPublicContent.setText(TextUtils.concat(sysTag," ",buildSysChatSequence((SystemMsg) data)));
+
+            }else{
+                tvPublicContent.setText(buildSysChatSequence((SystemMsg) data));
+            }
+        }
+
+        //item = new MsgItem(this,mHolderContext,data);
+    }
+
+    private CharSequence buildSysMsgSequence(RoomPublicMsg data) {
+        MsgUtils utils = MsgUtils.getInstance();
+        CharSequence sysTag = null;
+        CharSequence sysContent = null;
+        if(data instanceof LightHeartMsg){
+            int level = ((LightHeartMsg) data).getLevel();
+            sysTag = utils.buildTag("系統",((LightHeartMsg) data).getLevel(),tvPublicContent.getLineHeight());
+            sysContent = TextUtils.concat(
+                    utils.buildVipContent(level,utils.buildUserName(((LightHeartMsg) data).getFromClientName()),tvPublicContent.getLineHeight(),((LightHeartMsg) data).getApproveid()),
+                    /*utils.buildUserName(((LightHeartMsg) data).getFromClientName()),*/
+                    utils.buildPublicSysMsgContent(tvPublicContent.getContext().getString(R.string.room_live_msg_mylight))
+            );
+        }
+        if(data instanceof SendGiftMsg){
+            int level = ((SendGiftMsg) data).getLevel();
+            sysTag = utils.buildTag("系統",((SendGiftMsg) data).getLevel(),tvPublicContent.getLineHeight());
+            CharSequence mName = utils.buildUserName(((SendGiftMsg) data).getFromUserName());
+            CharSequence mContent = utils.buildPublicSysMsgContent(tvPublicContent.getContext().getString(R.string.room_live_msg_sendone));
+            sysContent =TextUtils.concat(
+                    utils.buildVipContent(level,mName,tvPublicContent.getLineHeight(),((SendGiftMsg) data).getApproveid()),
+                    mContent,utils.buildPublicSysMsgContent(((SendGiftMsg) data).getGiftName()));
+
+        }
+        if(data instanceof SystemWelcome){
+            SystemWelcome systemWelcome = (SystemWelcome) data;
+            sysTag = utils.buildTag("系統",((SystemWelcome) data).getLevelid(),tvPublicContent.getLineHeight());
+            sysContent =TextUtils.concat(
+//                    utils.buildPublicSysMsgName(((SystemWelcome) data).getClient_name()),
+                    utils.buildVipContent(systemWelcome.getLevelid(),utils.buildPublicSysMsgName(((SystemWelcome) data).getClient_name()),tvPublicContent.getLineHeight(),((SystemWelcome) data).getApproveid()),
+                    " ",
+                    utils.buildPublicSysMsgWelcome(tvPublicContent.getContext().getString(R.string.room_live_msg_myroom)));
+        }
+        return TextUtils.concat(sysTag,sysContent);
+    }
+
+    private void cancelItem(){
+        item.removeItem();
+    }
+/*
+    private CharSequence buildUserNameIcon(int resId, UserPublicMsg data) {
+        Drawable drawable;
+        MsgUtils utils = MsgUtils.getInstance();
+        int width = mContext.getResources().getDimensionPixelSize(R.dimen.user_level_width);
+        int height = mContext.getResources().getDimensionPixelSize(R.dimen.user_level_height);
+        Bitmap bitmap = BitmapFactory.decodeResource(mContext.getResources(), resId);
+        if (bitmap == null) {
+            return null;
+        }
+        Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, width, height, false);
+        drawable = new BitmapDrawable(mContext.getResources(),scaledBitmap);
+        String parseStr = "[@Level]";
+        ImageSpan span = new ImageSpan(mContext,scaledBitmap,ImageSpan.ALIGN_BASELINE);
+        CharSequence CName = getUserChatName(data);
+        SpannableStringBuilder ssb = new SpannableStringBuilder(parseStr+" "+CName);
+        ssb.setSpan(span, 0, parseStr.length(), Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
+        return ssb;
+    }
+*/
+
+    private CharSequence getUserChatName(UserPublicMsg msg) {
+        MsgUtils utils = MsgUtils.getInstance();
+        return TextUtils.concat(
+                utils.buildUserName(msg.getFromClientName()));
+    }
+
+    private CharSequence buildUserChatSequence(CharSequence nameView , UserPublicMsg msg) {
+        MsgUtils utils = MsgUtils.getInstance();
+        CharSequence level = utils.buildLevel(msg.getLevel());
+        //if level is not legal
+        if (level == null) {
+            level = "";
+        }
+        CharSequence mChatSequence = nameView;
+        //CharSequence mChatSequence  = utils.buildChatNameContent(msg,tvPublicContent.getLineHeight(),msg.getApproveid());
+        return TextUtils.concat(mChatSequence," ",utils.buildPublicMsgContent(msg.getContent()));
+    }
+
+    private CharSequence getNameView( UserPublicMsg msg) {
+        MsgUtils utils = MsgUtils.getInstance();
+        return utils.buildChatNameContent(msg,tvPublicContent.getLineHeight(),msg.getApproveid());
+    }
+
+    //    系统警告信息显示
+    private CharSequence buildSysChatSequence(SystemMsg msg) {
+        MsgUtils utils = MsgUtils.getInstance();
+//        CharSequence level = utils.buildLevel(msg.getLevel());
+//        //if level is not legal
+//        if (level == null) {
+//            level = "";
+//        }
+//      这里可能会用到
+        return TextUtils.concat(
+                utils.buildPublicSysMsgTip(msg.getContent()));
+    }
+
+    //    系统欢迎信息显示
+  /*  private CharSequence buildWelcomeChatSequence(SystemWelcome msg) {
+        MsgUtils utils = MsgUtils.getInstance();
+        CharSequence level = utils.buildLevel(msg.getLevelid());
+        //if level is not legal
+        return TextUtils.concat(
+                utils.buildPublicSysMsgName(msg.getClient_name()),
+                " "
+                //utils.buildPublicSysMsgWelcome(tvContent.getContext().getString(R.string.room_live_msg_myroom))
+                //utils.buildPublicSysMsgContent(tvContent.getContext().getString(R.string.room_live_msg_myroom))
+        );
+    }
+
+
+    private CharSequence buildLightHeartSequence(LightHeartMsg msg) {
+        MsgUtils utils = MsgUtils.getInstance();
+        return TextUtils.concat(
+                utils.buildUserName(msg.getFromClientName())
+                //utils.buildPublicSysMsgContent(tvContent.getContext().getString(R.string.room_live_msg_mylight))
+        );
+    }
+
+    private CharSequence buildGiftSequence(SendGiftMsg msg) {
+        MsgUtils utils = MsgUtils.getInstance();
+        CharSequence level = utils.buildLevel(msg.getLevel());
+        //if level is not legal
+        if (level == null) {
+            level = "";
+        }
+        return TextUtils.concat(
+                utils.buildUserName(msg.getFromUserName()),
+                //utils.buildPublicMsgContent(tvContent.getContext().getString(R.string.room_live_msg_sendone)),
+                msg.getGiftName()
+        );
+    }*/
+
+
+    @SuppressLint("NewApi")
+    @Override
+    public void onCompleteData(RoomPublicMsg data, final HashMap<String, Object> msgData) {
+        //Log.i("RayTest"," ----------------------------------");
+        this.mData = msgData;
+        //final RelativeLayout.LayoutParams vParams = (RelativeLayout.LayoutParams) vSpace.getLayoutParams();
+        if (data instanceof UserPublicMsg) {
+
+            // Log.i("RayTest","[UserPublicMsg]"+msgData.get(MsgItem.MsgContent)+" "+msgData.get(MsgItem.MsgType));
+
+            //llmainLayout.addView((View) msgData.get(MsgItem.MsgPublicView),0);
+          /*  tvPublicName.setText(msgData.get(MsgItem.MsgName)+"");
+            ivPublicLevel.setImageDrawable((Drawable) msgData.get(MsgItem.MsgLevel));*/
+            //tvContent.setText((CharSequence) msgData.get(MsgItem.MsgContent));
+            //tvPublicContent.setText((CharSequence) msgData.get(MsgItem.MsgContent));
+            //tvContent.setLayoutParams(params);
+          /*  Drawable drawable = (Drawable) msgData.get(MsgItem.MsgApproeid);
+            if(drawable!=null){
+                iv_idICon.setVisibility(View.VISIBLE);
+                iv_idICon.setImageDrawable((Drawable) msgData.get(MsgItem.MsgApproeid));
+            }else{
+                iv_idICon.setVisibility(View.GONE);
+            }*/
+        } else if (data instanceof LightHeartMsg || data instanceof SendGiftMsg || data instanceof SystemWelcome) {
+            // Log.i("RayTest","[Default]"+msgData.get(MsgItem.MsgContent)+" "+msgData.get(MsgItem.MsgType));
+         /*   Log.i("RayTest","[Default]"+msgData.get(MsgItem.MsgContent)+" "+msgData.get(MsgItem.MsgType));
+            tvMsgMode.setText((String) msgData.get(MsgItem.MsgType));
+            ivLevel.setImageDrawable((Drawable) msgData.get(MsgItem.MsgLevel));
+            tvContent.setText((CharSequence) msgData.get(MsgItem.MsgContent));
+            Drawable drawable = (Drawable) msgData.get(MsgItem.MsgApproeid);
+            if(drawable!=null){
+                iv_idICon.setVisibility(View.VISIBLE);
+                iv_idICon.setImageDrawable((Drawable) msgData.get(MsgItem.MsgApproeid));
+            }else{
+                iv_idICon.setVisibility(View.GONE);
+            }*/
+
+        } else if (data instanceof SystemMsg) {
+         /*   CharSequence sContent =(CharSequence) msgData.get(MsgItem.MsgContent);
+            if(sContent.toString().contains("將主播加入了最愛") ||sContent.toString().contains("将主播加入了最爱")|| sContent.toString().contains("已被管理員禁言") ){
+                tvMsgMode.setText((String) msgData.get(MsgItem.MsgType));
+                tvMsgMode.setVisibility(View.VISIBLE);
+                iv_idICon.setVisibility(View.GONE);
+            }
+            if(tvMsgMode.getVisibility()==View.VISIBLE)
+                iv_idICon.setVisibility(View.GONE);
+            else
+                iv_idICon.setVisibility(View.GONE);
+            tvContent.setText(sContent);
+        }
+*/
+            // Log.i("RayTest"," ----------------------------------");
+        }
+    }
+    public void onCancel (){
+        Log.i("RayTest","onCancel");
+        mData.clear();
+//        iv_idICon.setImageDrawable(null);
+    }
+
+
+    public void recycleView() {
+        if(nameView!=null){
+
+            if(nameView instanceof MsgUtils.CustomSpannableStringBuilder){
+                Log.i("RayTest","remove nameView");
+                MsgUtils.CustomSpannableStringBuilder customSpannableStringBuilder = (MsgUtils.CustomSpannableStringBuilder) nameView;
+                customSpannableStringBuilder.getImageSpan().recycleBitmapView();
+            }
+
+        }
+    }
+}
